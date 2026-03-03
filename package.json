@@ -1,0 +1,47 @@
+{
+  "name": "bitbucket-mcp",
+  "version": "1.0.0",
+  "description": "A production-grade, open-source MCP server for Bitbucket Cloud integration",
+  "type": "module",
+  "main": "dist/server.js",
+  "bin": {
+    "bitbucket-mcp": "dist/server.js"
+  },
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsup src/server.ts --format esm --clean --no-splitting",
+    "start": "node dist/server.js",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "mcp",
+    "bitbucket",
+    "model-context-protocol",
+    "claude",
+    "ai",
+    "developer-tools"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "pino": "^9.3.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "pino-pretty": "^11.2.0",
+    "prettier": "^3.3.0",
+    "tsup": "^8.2.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
