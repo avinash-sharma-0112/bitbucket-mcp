@@ -28,7 +28,9 @@ The [Model Context Protocol](https://modelcontextprotocol.io) is an open standar
 | `get_pull_request_details` | Full PR info: reviewers, participants, merge commit |
 | `get_pull_request_diff` | Raw unified diff (large diffs safely truncated) |
 | `list_pull_request_commits` | All commits in a PR |
-| `create_pull_request_comment` | Post a comment on a PR |
+| `list_pull_request_comments` | List all comments on a PR (general and inline) |
+| `create_pull_request_comment` | Post a general comment on a PR (posted as pending/draft) |
+| `create_inline_pull_request_comment` | Post an inline review comment pinned to a file and line (posted as pending/draft) |
 
 ---
 
@@ -135,6 +137,7 @@ After saving, **restart Claude Desktop**. You should see the Bitbucket tools ava
 "List all repositories in my workspace 'acme-corp'"
 "Show me the open pull requests in repo 'backend-api'"
 "Fetch the diff for PR #42 in workspace 'acme-corp', repo 'backend-api'"
+"List all comments on PR #42 in 'backend-api'"
 "Post a comment on PR #42: 'LGTM! Great work on the refactor.'"
 ```
 
@@ -202,7 +205,9 @@ bitbucket-mcp/
 │   │   ├── get-pull-request-details.ts
 │   │   ├── get-pull-request-diff.ts
 │   │   ├── list-pr-commits.ts
-│   │   └── create-pr-comment.ts
+│   │   ├── list-pr-comments.ts
+│   │   ├── create-pr-comment.ts
+│   │   └── create-inline-pr-comment.ts
 │   └── utils/
 │       ├── logger.ts          # Pino logger (stderr only)
 │       ├── errors.ts          # Error normalization

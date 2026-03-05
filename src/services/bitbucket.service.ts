@@ -205,6 +205,25 @@ export class BitbucketService {
   }
 
   /**
+   * Lists all comments on a pull request, auto-paginating.
+   */
+  async listPullRequestComments(
+    workspace: string,
+    repoSlug: string,
+    prId: number
+  ): Promise<Comment[]> {
+    const comments = await fetchAllPages<BitbucketCommentResponse>(
+      this.client,
+      `/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests/${prId}/comments`
+    );
+    return comments.map((c) => ({
+      id: c.id,
+      content: c.content.raw,
+      ...(c.inline !== undefined && { inline: c.inline }),
+    }));
+  }
+
+  /**
    * Posts a comment on a pull request.
    * When `inline` is provided, the comment is pinned to a specific file + line in the diff.
    * Content is validated (max 10,000 chars) before being sent.
@@ -216,8 +235,9 @@ export class BitbucketService {
     content: string,
     inline?: CommentInline
   ): Promise<Comment> {
-    const body: { content: { raw: string }; inline?: CommentInline } = {
+    const body: { content: { raw: string }; inline?: CommentInline; pending: boolean } = {
       content: { raw: content },
+      pending: true,
     };
     if (inline !== undefined) {
       body.inline = inline;

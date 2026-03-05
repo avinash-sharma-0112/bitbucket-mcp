@@ -11,6 +11,7 @@ import { registerGetPullRequestDiff } from './tools/get-pull-request-diff.js';
 import { registerListPrCommits } from './tools/list-pr-commits.js';
 import { registerCreatePrComment } from './tools/create-pr-comment.js';
 import { registerCreateInlinePrComment } from './tools/create-inline-pr-comment.js';
+import { registerListPrComments } from './tools/list-pr-comments.js';
 
 import { logger } from './utils/logger.js';
 
@@ -32,6 +33,7 @@ async function main(): Promise<void> {
   registerListPrCommits(server, service);
   registerCreatePrComment(server, service);
   registerCreateInlinePrComment(server, service);
+  registerListPrComments(server, service);
 
   // Connect using stdio transport (Claude Desktop / MCP clients communicate over stdin/stdout)
   const transport = new StdioServerTransport();
