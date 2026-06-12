@@ -12,6 +12,10 @@ import { registerListPrCommits } from './tools/list-pr-commits.js';
 import { registerCreatePrComment } from './tools/create-pr-comment.js';
 import { registerCreateInlinePrComment } from './tools/create-inline-pr-comment.js';
 import { registerListPrComments } from './tools/list-pr-comments.js';
+import { registerListPrTasks } from './tools/list-pr-tasks.js';
+import { registerCreatePrTask } from './tools/create-pr-task.js';
+import { registerUpdatePrTask } from './tools/update-pr-task.js';
+import { registerDeletePrTask } from './tools/delete-pr-task.js';
 
 import { logger } from './utils/logger.js';
 
@@ -34,6 +38,10 @@ async function main(): Promise<void> {
   registerCreatePrComment(server, service);
   registerCreateInlinePrComment(server, service);
   registerListPrComments(server, service);
+  registerListPrTasks(server, service);
+  registerCreatePrTask(server, service);
+  registerUpdatePrTask(server, service);
+  registerDeletePrTask(server, service);
 
   // Connect using stdio transport (Claude Desktop / MCP clients communicate over stdin/stdout)
   const transport = new StdioServerTransport();

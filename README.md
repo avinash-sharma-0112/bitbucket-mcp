@@ -16,6 +16,7 @@ The [Model Context Protocol](https://modelcontextprotocol.io) is an open standar
 - Show open (or merged/declined) pull requests
 - Fetch PR details, diffs, and commit history
 - Post review comments on PRs
+- Manage tasks on PRs (list, create, resolve, delete)
 
 ---
 
@@ -31,6 +32,10 @@ The [Model Context Protocol](https://modelcontextprotocol.io) is an open standar
 | `list_pull_request_comments` | List all comments on a PR (general and inline) |
 | `create_pull_request_comment` | Post a general comment on a PR (posted as pending/draft) |
 | `create_inline_pull_request_comment` | Post an inline review comment pinned to a file and line (posted as pending/draft) |
+| `list_pull_request_tasks` | List all tasks on a PR |
+| `create_pull_request_task` | Create a task on a PR (optionally attach to a comment) |
+| `update_pull_request_task` | Update task content or mark it RESOLVED / UNRESOLVED |
+| `delete_pull_request_task` | Delete a task from a PR |
 
 ---
 
@@ -139,6 +144,10 @@ After saving, **restart Claude Desktop**. You should see the Bitbucket tools ava
 "Fetch the diff for PR #42 in workspace 'acme-corp', repo 'backend-api'"
 "List all comments on PR #42 in 'backend-api'"
 "Post a comment on PR #42: 'LGTM! Great work on the refactor.'"
+"List all tasks on PR #42 in 'backend-api'"
+"Create a task on PR #42: 'Add unit tests for the new endpoint'"
+"Mark task 7 on PR #42 as resolved"
+"Delete task 7 from PR #42"
 ```
 
 ---
@@ -207,7 +216,11 @@ bitbucket-mcp/
 │   │   ├── list-pr-commits.ts
 │   │   ├── list-pr-comments.ts
 │   │   ├── create-pr-comment.ts
-│   │   └── create-inline-pr-comment.ts
+│   │   ├── create-inline-pr-comment.ts
+│   │   ├── list-pr-tasks.ts
+│   │   ├── create-pr-task.ts
+│   │   ├── update-pr-task.ts
+│   │   └── delete-pr-task.ts
 │   └── utils/
 │       ├── logger.ts          # Pino logger (stderr only)
 │       ├── errors.ts          # Error normalization

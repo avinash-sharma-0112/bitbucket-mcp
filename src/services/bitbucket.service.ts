@@ -47,7 +47,19 @@ export interface CommentInline {
 export interface Comment {
   id: number;
   content: string;
+  author: string;
+  created_on: string;
   inline?: CommentInline;
+}
+
+export interface Task {
+  id: number;
+  content: string;
+  state: 'UNRESOLVED' | 'RESOLVED';
+  created_on: string;
+  updated_on: string;
+  creator: string;
+  comment_id?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +102,19 @@ interface BitbucketCommit {
 interface BitbucketCommentResponse {
   id: number;
   content: { raw: string };
+  user: { display_name: string };
+  created_on: string;
   inline?: { path: string; to: number; from?: number };
+}
+
+interface BitbucketTaskResponse {
+  id: number;
+  content: { raw: string };
+  state: 'UNRESOLVED' | 'RESOLVED';
+  created_on: string;
+  updated_on: string;
+  creator: { display_name: string };
+  comment?: { id: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -176,11 +200,30 @@ export class BitbucketService {
     repoSlug: string,
     prId: number
   ): Promise<string> {
-    const { data } = await this.client.get<string>(
+    // The diff endpoint returns a 302 redirect whose Location URL contains %0D
+    // (carriage return) between commit hashes. Axios/follow-redirects decodes
+    // %0D to a literal \r, corrupting the HTTP request. We handle the redirect
+    // manually to avoid this.
+    const redirect = await this.client.get<string>(
       `/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests/${prId}/diff`,
-      { responseType: 'text' }
+      {
+        maxRedirects: 0,
+        responseType: 'text',
+        headers: { Accept: 'text/plain' },
+        validateStatus: (status) => status === 302 || (status >= 200 && status < 300),
+      }
     );
-    return data;
+
+    if (redirect.status === 302) {
+      const location = redirect.headers['location'] as string;
+      const { data } = await this.client.get<string>(location, {
+        responseType: 'text',
+        headers: { Accept: 'text/plain' },
+      });
+      return data;
+    }
+
+    return redirect.data;
   }
 
   /**
@@ -219,8 +262,93 @@ export class BitbucketService {
     return comments.map((c) => ({
       id: c.id,
       content: c.content.raw,
+      author: c.user.display_name,
+      created_on: c.created_on,
       ...(c.inline !== undefined && { inline: c.inline }),
     }));
+  }
+
+  async listPullRequestTasks(
+    workspace: string,
+    repoSlug: string,
+    prId: number
+  ): Promise<Task[]> {
+    const tasks = await fetchAllPages<BitbucketTaskResponse>(
+      this.client,
+      `/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests/${prId}/tasks`
+    );
+    return tasks.map((t) => ({
+      id: t.id,
+      content: t.content.raw,
+      state: t.state,
+      created_on: t.created_on,
+      updated_on: t.updated_on,
+      creator: t.creator.display_name,
+      ...(t.comment !== undefined && { comment_id: t.comment.id }),
+    }));
+  }
+
+  async createPullRequestTask(
+    workspace: string,
+    repoSlug: string,
+    prId: number,
+    content: string,
+    commentId?: number
+  ): Promise<Task> {
+    const body: { content: { raw: string }; pending: boolean; comment?: { id: number } } = {
+      content: { raw: content },
+      pending: true,
+    };
+    if (commentId !== undefined) {
+      body.comment = { id: commentId };
+    }
+    const { data } = await this.client.post<BitbucketTaskResponse>(
+      `/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests/${prId}/tasks`,
+      body
+    );
+    return {
+      id: data.id,
+      content: data.content.raw,
+      state: data.state,
+      created_on: data.created_on,
+      updated_on: data.updated_on,
+      creator: data.creator.display_name,
+      ...(data.comment !== undefined && { comment_id: data.comment.id }),
+    };
+  }
+
+  async updatePullRequestTask(
+    workspace: string,
+    repoSlug: string,
+    prId: number,
+    taskId: number,
+    content: string,
+    state: 'UNRESOLVED' | 'RESOLVED'
+  ): Promise<Task> {
+    const { data } = await this.client.put<BitbucketTaskResponse>(
+      `/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests/${prId}/tasks/${taskId}`,
+      { content: { raw: content }, state }
+    );
+    return {
+      id: data.id,
+      content: data.content.raw,
+      state: data.state,
+      created_on: data.created_on,
+      updated_on: data.updated_on,
+      creator: data.creator.display_name,
+      ...(data.comment !== undefined && { comment_id: data.comment.id }),
+    };
+  }
+
+  async deletePullRequestTask(
+    workspace: string,
+    repoSlug: string,
+    prId: number,
+    taskId: number
+  ): Promise<void> {
+    await this.client.delete(
+      `/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests/${prId}/tasks/${taskId}`
+    );
   }
 
   /**
@@ -251,6 +379,8 @@ export class BitbucketService {
     return {
       id: data.id,
       content: data.content.raw,
+      author: data.user.display_name,
+      created_on: data.created_on,
       ...(data.inline !== undefined && { inline: data.inline }),
     };
   }

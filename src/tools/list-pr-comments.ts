@@ -15,7 +15,7 @@ export function registerListPrComments(server: McpServer, service: BitbucketServ
     'list_pull_request_comments',
     {
       description:
-        'List all comments on a pull request. Returns id, content, and optional inline ' +
+        'List all comments on a pull request. Returns id, content, author, created_on, and optional inline ' +
         'location (file path and line numbers) for each comment. Auto-paginates.',
       inputSchema,
     },

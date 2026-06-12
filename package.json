@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "tsx src/server.ts",
+    "test": "node --import tsx --test tests/**/*.test.ts",
     "build": "tsup src/server.ts --format esm --clean --no-splitting",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",

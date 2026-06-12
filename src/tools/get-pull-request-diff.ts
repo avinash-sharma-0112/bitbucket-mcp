@@ -50,6 +50,7 @@ export function registerGetPullRequestDiff(server: McpServer, service: Bitbucket
       } catch (err) {
         const error = normalizeError(err);
         logger.warn({ workspace, repo_slug, pr_id, error }, 'get_pull_request_diff failed');
+
         return {
           content: [{ type: 'text', text: formatError(error) }],
           isError: true,
